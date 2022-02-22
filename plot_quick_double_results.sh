@@ -22,6 +22,11 @@ gmt makecpt -T1e-1/1e4/1 -Cgray -Qo -Z -D > power.cpt
 gmt makecpt -T1e-1/1e4/1 -Cgray -Qo -Z -D > xpower.cpt
 gmt makecpt -T0/1/0.01 -Cplasma -Z -D > cohpower.cpt
 
+infile1="./amphibia_richness_americas.dat"
+infile2="./carnivora_richness_americas.dat"
+
+python3.8 wrapper.py $infile1 $infile2
+
 
 #### plot SIGNAL 1 ####
 proj="-JX8c/8c"
