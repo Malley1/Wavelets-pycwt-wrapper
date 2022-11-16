@@ -1,5 +1,5 @@
 # Wavelets
-Go-to repository for wavelet analysis code.
+Go-to repository for wavelet analysis code (basically a wrapper for `pycwt`).
 
 Requires `pycwt` and `Python 3.8` or higher.
 
