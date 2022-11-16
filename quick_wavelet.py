@@ -106,7 +106,7 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 			print(i, scales[i], period[i], 1./period[i], file=open(spname, 'a'))
 		outfile.close()
 
-	## Gabor limit check !!?!##
+	## Gabor limit check ##
 	x_array = dt*np.arange(1, len(x_pad)+1)
 	freqs = 1/period
 	s1 = np.std(x_array)
