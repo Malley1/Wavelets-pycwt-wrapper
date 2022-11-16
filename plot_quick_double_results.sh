@@ -19,6 +19,7 @@ echo $psfile
 bearingcpt="./bearing4.cpt"
 
 gmt makecpt -T1e-1/1e4/1 -Cgray -Qo -Z -D > power.cpt
+gmt makecpt -T1e-7/1e-3/1 -Cgray -Qo -Z -D > rectpower.cpt
 gmt makecpt -T1e-1/1e4/1 -Cgray -Qo -Z -D > xpower.cpt
 gmt makecpt -T0/1/0.01 -Cplasma -Z -D > cohpower.cpt
 
@@ -72,13 +73,13 @@ rgnkm="-R0/$lenkm/$minperiod/$maxperiod"
 
 gmt psbasemap $rgnkm $proj -Ba10000f5000:"Distance, km":/a1f3p:"Wavelength, m":WeS -X11c -O -K >> $psfile
 
-awk '{ printf "%4.8f %4.20f %4.8f \n", $2, log($4), $3}' $indir1/file1.txt | gmt blockmean -I${dt2}/${loginc} $rgnlog | gmt surface -I${dt2}/$loginc $rgnlog -Gsurf.grd
-gmt grdimage surf.grd $rgnlog $projlog -E300 -Cpower.cpt -K -O >> $psfile
+awk '{ printf "%4.8f %4.20f %4.8f \n", $2, log($4), $6}' $indir1/file1.txt | gmt blockmean -I${dt2}/${loginc} $rgnlog | gmt surface -I${dt2}/$loginc $rgnlog -Gsurf.grd
+gmt grdimage surf.grd $rgnlog $projlog -E300 -Crectpower.cpt -K -O >> $psfile
 
 echo "b" | gmt pstext $rgn $proj -Gwhite -F+f16p,+cTL -D8p/-8p  -K -O >> $psfile
 
 gmt psbasemap $rgn $proj -Ba0 -O -K >> $psfile
-gmt psscale -Dn0.5/1.06+w8c/0.4c+h+e+m+jCM -Cpower.cpt $rgn $proj -B+l"Power" -Q -O -K >> $psfile
+gmt psscale -Dn0.5/1.06+w8c/0.4c+h+e+m+jCM -Crectpower.cpt $rgn $proj -B+l"Rectified Power" -Q -O -K >> $psfile
 
 gmt psbasemap $rgn $proj -Ba0 -O -K >> $psfile
 
@@ -133,15 +134,15 @@ rgnkm="-R0/$lenkm/$minperiod/$maxperiod"
 
 gmt psbasemap $rgnkm $proj -Ba5000f1000:"Distance, km":/a1f3p:"Wavelength, m":WeS -X11c -O -K >> $psfile
 
-awk '{ printf "%4.8f %4.20f %4.8f \n", $2, log($4), $3}' $indir2/file2.txt | gmt blockmean -I${dt2}/${loginc} $rgnlog | gmt surface -I${dt2}/$loginc $rgnlog -Gsurf.grd
-gmt grdimage surf.grd $rgnlog $projlog -E300 -Cpower.cpt -K -O >> $psfile
+awk '{ printf "%4.8f %4.20f %4.8f \n", $2, log($4), $6}' $indir2/file2.txt | gmt blockmean -I${dt2}/${loginc} $rgnlog | gmt surface -I${dt2}/$loginc $rgnlog -Gsurf.grd
+gmt grdimage surf.grd $rgnlog $projlog -E300 -Crectpower.cpt -K -O >> $psfile
 
 #awk -v dt=$dt '{print (NR-1)*dt, $1}' ./coi.h | gmt psxy $rgn $proj -W1.5p,grey -O -K >> $psfile
 
 echo "e" | gmt pstext $rgn $proj -Gwhite -F+f16p,+cTL -D8p/-8p  -K -O >> $psfile
 
 gmt psbasemap $rgn $proj -Ba0 -O -K >> $psfile
-gmt psscale -Dn0.5/1.06+w8c/0.4c+h+e+m+jCM -Cpower.cpt $rgn $proj -B+l"Power" -Q -O -K >> $psfile
+gmt psscale -Dn0.5/1.06+w8c/0.4c+h+e+m+jCM -Crectpower.cpt $rgn $proj -B+l"Rectified Power" -Q -O -K >> $psfile
 
 gmt psbasemap $rgn $proj -Ba0 -O -K >> $psfile
 
@@ -259,7 +260,6 @@ rgnkm="-R0/$lenkm/$minperiod/$maxperiod"
 
 gmt psbasemap $rgnkm $proj -Ba5000f1000:"Distance":/a1f3p:"Wavelength, m":EwS -X10.5c -O -K >> $psfile
 
-#awk '{if ($3>=0 && $3<=90) print $2, log($4), 90-$3 ; else if ($3>90 && $3<=180) print $2, log($4), 450-$3 ; else if ($3<0) print $2, log($4), 90-$3}' $outdir/R_phase.txt | gmt blockmean -I${dt2}/${loginc} $rgnlog | gmt surface -I${dt2}/$loginc $rgnlog -Gsurf.grd
 awk '{if ($3>=0 && $3<=90) print $2, log($4), 90-$3 ; else if ($3>90 && $3<=180) print $2, log($4), 450-$3 ; else if ($3<0) print $2, log($4), 90-$3}' $outdir/phase.txt | gmt blockmean -I${dt2}/${loginc} $rgnlog | gmt surface -I${dt2}/$loginc $rgnlog -Gsurf.grd
 gmt grdimage surf.grd $rgnlog $projlog -E300 -C${bearingcpt} -K -O >> $psfile
 
@@ -283,5 +283,4 @@ convert -density 300 -rotate 90 -quality 100 -trim $psfile $jpgfile
 rm $psfile
 
 eog $jpgfile &
-
 
