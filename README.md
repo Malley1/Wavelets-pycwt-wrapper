@@ -1,4 +1,6 @@
-# Wavelets
+# Wavelets (`pycwt` wrapper)
+[![DOI](https://zenodo.org/badge/432215846.svg)](https://zenodo.org/badge/latestdoi/432215846)
+
 Go-to repository for wavelet analysis code (basically a wrapper for `pycwt`).
 
 Requires `pycwt` and `Python 3.8` or higher.
