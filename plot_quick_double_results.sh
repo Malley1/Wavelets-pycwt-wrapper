@@ -94,6 +94,7 @@ projwavl="-JX-8cl/8cl"
 gmt psbasemap $rgn $proj -Ba1f3p:"Wavenumber, m@+-1@+":/a1p:"Rectified power, @~f@~@-r@-":wES -X11c -O -K >> $psfile
 gmt psbasemap $rgnwavl $projwavl -Ba1f3p+l"Wavelength, km" -BN -O -K >> $psfile
 
+awk '{printf "%4.40f %4.40f\n", $1, $2}' $indir1/fft1.pow | gmt psxy $rgn $proj -W0.2p,grey -O -K >> $psfile 
 awk '{ printf "%4.40f %4.40f\n",  $3, $5 }' $indir1/sumpower1.fp | gmt psxy $rgn $proj -W2.4p,black -O -K >> $psfile
 
 echo "c" | gmt pstext $rgn $proj -Gwhite -F+f16p,+cTL -D8p/-8p  -K -O >> $psfile
@@ -157,6 +158,7 @@ projwavl="-JX-8cl/8cl"
 gmt psbasemap $rgn $proj -Ba1f3p:"Wavenumber, m@+-1@+":/a1p:"Rectified power, @~f@~@-r@-":wES -X11c -O -K >> $psfile
 gmt psbasemap $rgnwavl $projwavl -Ba1f3p+l"Wavelength, km" -BN -O -K >> $psfile
 
+awk '{printf "%4.40f %4.40f\n", $1, $2}' $indir2/fft2.pow | gmt psxy $rgn $proj -W0.2p,grey -O -K >> $psfile 
 awk '{ printf "%4.40f %4.40f\n",  $3, $5 }' $indir2/sumpower2.fp | gmt psxy $rgn $proj -W2.4p,black -O -K >> $psfile
 
 echo "f" | gmt pstext $rgn $proj -Gwhite -F+f16p,+cTL -D8p/-8p  -K -O >> $psfile
