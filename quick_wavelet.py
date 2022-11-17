@@ -30,7 +30,14 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 	outdir = '.'
 
 	p = int(om0)
-	recon_factor = recon(wf, p, dj, dt) # OR, use pycwt?
+	if wf == 'morlet':
+		fullwavelet = pycwt.wavelet.Morlet(p)
+	elif wf == 'dog':
+		fullwavelet = pycwt.wavelet.DOG(p)
+	elif wf == 'paul':
+		fullwavelet = pycwt.wavelet.Paul(p)
+	else:
+		sys.exit('Could not recognise desired mother wavelet, exiting...')
 
 	## read in data ##
 	xtemp = np.loadtxt(infile)
@@ -127,7 +134,7 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 
 
 	## perform continuous wavelet transform ##
-	cwtX = pycwt.cwt(x_pad, dt, dj=dj, s0=min(scales), J=len(scales)-1, wavelet=wf)
+	cwtX = pycwt.cwt(x_pad, dt, dj=dj, s0=min(scales), J=len(scales)-1, wavelet=fullwavelet)
 	X = cwtX[0]
 	sj = cwtX[1]
 	coi = cwtX[4]
@@ -149,7 +156,7 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 	# INCLUDES calculation of recon factor (from empirical cdelta) unlike mlpy
 
 #	x_icwt = pycwt.icwt(X, sj, dt, dj=dj, wavelet=wf).real
-	x_icwt = icwt_fixed(X, sj, dt, dj=dj, wavelet=wf).real
+	x_icwt = icwt_fixed(X, sj, dt, dj=dj, wavelet=fullwavelet).real
 
 	icwtname = outdir + '/x_icwt.x'
 	if write_output == True :
@@ -179,8 +186,8 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 
 	#	x_icwt_part1 = pycwt.icwt(X_cut1, np.array(scales_cut1), dt, dj=dj, wavelet=wf).real
 	#	x_icwt_part2 = pycwt.icwt(X_cut2, np.array(scales_cut2), dt, dj=dj, wavelet=wf).real
-		x_icwt_part1 = icwt_fixed(X_cut1, np.array(scales_cut1), dt, dj=dj, wavelet=wf).real
-		x_icwt_part2 = icwt_fixed(X_cut2, np.array(scales_cut2), dt, dj=dj, wavelet=wf).real
+		x_icwt_part1 = icwt_fixed(X_cut1, np.array(scales_cut1), dt, dj=dj, wavelet=fullwavelet).real
+		x_icwt_part2 = icwt_fixed(X_cut2, np.array(scales_cut2), dt, dj=dj, wavelet=fullwavelet).real
 
 		if write_output == True :
 			op1name = outdir + '/x_icwt_part1.x'
@@ -279,9 +286,18 @@ def run_double_wavelet_analysis(infile1, infile2, dt=10000., mirror=True, cut1=N
 	Wyy = Y * np.conjugate(Y)
 	yypower = np.abs(Wyy)
 	phasexy = np.angle(Wxy,deg=True)
+	
+	if wf == 'morlet':
+		fullwavelet = pycwt.wavelet.Morlet(om0)
+	elif wf == 'dog':
+		fullwavelet = pycwt.wavelet.DOG(om0)
+	elif wf == 'paul':
+		fullwavelet = pycwt.wavelet.Paul(om0)
+	else:
+		sys.exit('Could not recognise desired mother wavelet, exiting...')
 
 	print("\nCalculating coherence with pycwt...\n")
-	R2ns, R_phase, coi, freq, sig = pycwt.wct(x_pad,y_pad,dt,dj=dj,s0=scales[0],J=len(scales)-1,sig=False, wavelet=wf)
+	R2ns, R_phase, coi, freq, sig = pycwt.wct(x_pad,y_pad,dt,dj=dj,s0=scales[0],J=len(scales)-1,sig=False, wavelet=fullwavelet)
 
 
 
