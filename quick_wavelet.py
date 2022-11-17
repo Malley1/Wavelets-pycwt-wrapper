@@ -137,7 +137,7 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 	cwtX = pycwt.cwt(x_pad, dt, dj=dj, s0=min(scales), J=len(scales)-1, wavelet=fullwavelet)
 	X = cwtX[0]
 	sj = cwtX[1]
-	coi = cwtX[4]
+	coi = cwtX[3]
 	power = (np.abs(X))**2.
 	sumpow = np.sum(power, axis=1)
 	sumpowname = outdir + '/sumpower.fp'
@@ -264,8 +264,8 @@ def run_double_wavelet_analysis(infile1, infile2, dt=10000., mirror=True, cut1=N
 	Y = cwtY[0]
 	sjx = cwtX[1]
 	sjy = cwtY[1]
-	coix = cwtX[4]
-	coiy = cwtY[4]
+	coix = cwtX[3]
+	coiy = cwtY[3]
 	powerx = (np.abs(X))**2.
 	powery = (np.abs(Y))**2.
 	sumpowx = np.sum(powerx, axis=1)
