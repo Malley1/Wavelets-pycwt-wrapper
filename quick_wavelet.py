@@ -212,7 +212,7 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 		outfile = open(filename, 'w')
 		for i in range (0,numrows):
 			for j in range (0,numcols):
-				print(i, j*dt, power[i,j], period[i], 1./period[i], power[i,j]/period[i], file=open(filename, 'a'))
+				print(i, j*dt, power[i,j], period[i], 1./period[i], power[i,j]/scales[i], file=open(filename, 'a'))
 		outfile.close()
 		print("Wrote to file.txt succesfully.")
 
