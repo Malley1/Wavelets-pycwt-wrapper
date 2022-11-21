@@ -84,24 +84,49 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 
 	fftave = np.convolve(fft_power, np.ones(5)/5)
 
+	### saving np fft results separate to those done internally by pycwt (by pyfftw.interfaces.scipy_fftpack - see helpers.py from pycwt)
+	fft_freq_np = fft_freq
+	fft_power_np = fft_power
+	fft_ave_np = fftave
+	fkinv_np = fkinv
+
 	if write_output == True:
 		fftpowname = outdir + '/fft.pow'
 		fftinvname = outdir + '/fft.inv'
 		outfile = open(fftpowname, 'w')
 		for i in range (0,len(fft_power)):
-			print(fft_freq[i], fft_power[i] , fftave[i], file=open(fftpowname, 'a'))
+			print(fft_freq_np[i], fft_power_np[i] , fft_ave_np[i], file=open(fftpowname, 'a'))
 		outfile.close()
 		
 		outfile = open(fftinvname, 'w')
-		for i in range (0,len(fkinv.real)):
-			print(fkinv.real[i],file=open(fftinvname, 'a'))
+		for i in range (0,len(fkinv_np.real)):
+			print(fkinv_np.real[i],file=open(fftinvname, 'a'))
 		outfile.close()
  
 	## calculate wavelet scales ##
 	N=int(x_pad.shape[0])
 	N_orig = int(len(x_orig))
-	scales = autoscales(N=N, dt=dt, dj=dj, wf=wf, p=p)
-	scales_orig = autoscales(N=N_orig, dt=dt, dj=dj, wf=wf, p=p)
+
+	s0 = 2.*dt
+
+	j_full = (1/dj) * np.log(N*dt /s0) / np.log(2.)
+	j_orig = (1/dj) * np.log(N_orig*dt /s0) / np.log(2.)
+
+	## perform continuous wavelet transform ##
+	cwtX = pycwt.cwt(x_pad, dt, dj=dj, s0=s0, J=j_full, wavelet=fullwavelet)
+	cwtX_orig = pycwt.cwt(x_orig, dt, dj=dj, s0=s0, J=j_orig, wavelet=fullwavelet)
+	X = cwtX[0]
+	sj = cwtX[1]
+	sj_orig = cwtX_orig[1]
+	coi = cwtX[3]
+	fft_power_pycwt = cwtX[4] ** 2.
+	fft_freq_pycwt = cwtX[5]
+	fftave_pycwt = np.convolve(fft_power_pycwt, np.ones(5)/5)
+	power = (np.abs(X))**2.
+	sumpow = np.sum(power, axis=1)
+
+	scales = sj
+	scales_orig = sj_orig
 
 	## convert scales to fourier periods ##
 	period = fourier_from_scales(scales,wf=wf,p=p)
@@ -113,15 +138,6 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 			print(i, scales[i], period[i], 1./period[i], file=open(spname, 'a'))
 		outfile.close()
 
-	## Gabor limit check ##
-	x_array = dt*np.arange(1, len(x_pad)+1)
-	freqs = 1/period
-	s1 = np.std(x_array)
-	s2 = np.std(freqs)
-	gtest = s1*s2
-	if gtest < 1/(4*np.pi):
-		print('\nWarning, signal spacing/frequency choice may not conform to Gabor limit...\n')
-
 	period_orig = fourier_from_scales(scales_orig,wf=wf,p=p)
 	scale_len_orig = len(scales_orig)
 
@@ -132,20 +148,29 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 			print(i, scales_orig[i], period_orig[i], 1./period_orig[i], file=open(sporigname, 'a'))
 		outfile.close()
 
-
-	## perform continuous wavelet transform ##
-	cwtX = pycwt.cwt(x_pad, dt, dj=dj, s0=min(scales), J=len(scales)-1, wavelet=fullwavelet)
-	X = cwtX[0]
-	sj = cwtX[1]
-	coi = cwtX[3]
-	power = (np.abs(X))**2.
-	sumpow = np.sum(power, axis=1)
 	sumpowname = outdir + '/sumpower.fp'
 	if write_output == True :
 		outfile = open(sumpowname, 'w')
-		for i in range (0, scale_len):
+		for i in range (0, len(sj)):
 			print(sumpow[i] / xlen , period[i], 1./period[i], scales[i], sumpow[i] / (scales[i] * xlen),file=open(sumpowname, 'a'))
 		outfile.close()
+
+	if write_output == True:
+		fftpowname = outdir + '/fft_pycwt.pow'
+		outfile = open(fftpowname, 'w')
+		for i in range (0,len(fft_power_pycwt)):
+			print(fft_freq_pycwt[i], fft_power_pycwt[i] , fftave_pycwt[i], file=open(fftpowname, 'a'))
+		outfile.close()
+
+
+	## Gabor limit check ##
+	x_array = dt*np.arange(1, len(x_pad)+1)
+	freqs = 1/period
+	s1 = np.std(x_array)
+	s2 = np.std(freqs)
+	gtest = s1*s2
+	if gtest < 1/(4*np.pi):
+		print('\nWarning, signal spacing/frequency choice may not conform to Gabor limit...\n')
 
 	# perform inverse transform (to check correct scales have been used)...
 	## NOTE there was an error in previous versions of pycwt - check wavelet.py line 170 in icwt - sj should be square rooted on bottom of iW = ...
@@ -184,8 +209,6 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 		X_cut1 = X[len(scales)-ncut1:len(scales),0:X_numcols]
 		X_cut2 = X[len(scales)-ncut2:len(scales),0:X_numcols]
 
-	#	x_icwt_part1 = pycwt.icwt(X_cut1, np.array(scales_cut1), dt, dj=dj, wavelet=wf).real
-	#	x_icwt_part2 = pycwt.icwt(X_cut2, np.array(scales_cut2), dt, dj=dj, wavelet=wf).real
 		x_icwt_part1 = icwt_fixed(X_cut1, np.array(scales_cut1), dt, dj=dj, wavelet=fullwavelet).real
 		x_icwt_part2 = icwt_fixed(X_cut2, np.array(scales_cut2), dt, dj=dj, wavelet=fullwavelet).real
 
@@ -241,6 +264,7 @@ def run_double_wavelet_analysis(infile1, infile2, dt=10000., mirror=True, cut1=N
 	shutil.copyfile('./xmirror.mean', './xmirror1.mean')
 	shutil.copyfile('./signal.h', './signal1.h')
 	shutil.copyfile('./fft.pow', './fft1.pow')
+	shutil.copyfile('./fft_pycwt.pow', './fft1_pycwt.pow')
 	shutil.copyfile('./fft.inv', './fft1.inv')
 	shutil.copyfile('./scales.periods', './scales1.periods')
 	shutil.copyfile('./scales_orig.periods', './scales_orig1.periods')
@@ -253,6 +277,7 @@ def run_double_wavelet_analysis(infile1, infile2, dt=10000., mirror=True, cut1=N
 	shutil.copyfile('./xmirror.mean', './xmirror2.mean')
 	shutil.copyfile('./signal.h', './signal2.h')
 	shutil.copyfile('./fft.pow', './fft2.pow')
+	shutil.copyfile('./fft_pycwt.pow', './fft2_pycwt.pow')
 	shutil.copyfile('./fft.inv', './fft2.inv')
 	shutil.copyfile('./scales.periods', './scales2.periods')
 	shutil.copyfile('./scales_orig.periods', './scales_orig2.periods')
@@ -334,7 +359,6 @@ def run_double_wavelet_analysis(infile1, infile2, dt=10000., mirror=True, cut1=N
 		outfile.close()
 		outfile2.close()
 		outfile3.close()
-
 
 
 
