@@ -24,8 +24,7 @@ from processing_wav import pad, autoscales, recon, fourier_from_scales, icwt_fix
 #	dj=0.1
 #	wf = 'morlet'
 
-
-def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=None, write_output=True, wf='morlet', dj=0.1, om0=6, normmean=True):
+def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=None, write_output=True, wf='morlet', dj=0.1, om0=6, normmean=True, mirrormethod=1):
 
 	outdir = '.'
 
@@ -50,12 +49,21 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 	## mirror/flip and save mean of result ##
 	if mirror == True :
 		xmax = np.amax(x)
-		xstart = x[0]
-		xend = x[-1]
-		x_rev = x[::-1]
-		x_rev_flip = np.multiply(x_rev,-1.) + xend*2.
-		x_flip = np.multiply(x,-1.) + xstart*2
-		x = np.concatenate((x_orig,x_rev_flip,x_flip,x_rev,x_orig,x_rev_flip,x_flip,x_rev),axis=0)
+
+		if mirrormethod == 1:
+			xstart = x[0]
+			xend = x[-1]
+			x_rev = x[::-1]
+			x_rev_flip = np.multiply(x_rev,-1.) + xend*2.
+			x_flip = np.multiply(x,-1.) + xstart*2
+			x = np.concatenate((x_orig,x_rev_flip,x_flip,x_rev,x_orig,x_rev_flip,x_flip,x_rev),axis=0)
+
+		if mirrormethod == 2:
+			x_rev = x[::-1]
+			x_flip = (x * -1.)
+			x_rev_flip = (x_rev * -1.) 
+			x = np.concatenate((x,x_rev,x_flip,x_rev_flip,x,x_rev,x_flip,x_rev_flip),axis=0)
+
 		xmirrormean = np.mean(x)
 		xmname = outdir + '/xmirror.mean'
 		np.savetxt(xmname, np.array([xmirrormean]))
@@ -243,7 +251,7 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 
 
 
-def run_double_wavelet_analysis(infile1, infile2, dt=10000., mirror=True, cut1=None, cut2=None, write_output=True, wf='morlet', dj=0.1, om0=6, normmean=True):
+def run_double_wavelet_analysis(infile1, infile2, dt=10000., mirror=True, cut1=None, cut2=None, write_output=True, wf='morlet', dj=0.1, om0=6, normmean=True, mirrormethod=1):
 
 	print('\nWarning, currently run_double_wavelet_analysis will overwrite any single wavelet analysis results in the same directory!\n')
 	print('Also, not saving cut-off inverse transforms...')
@@ -259,7 +267,7 @@ def run_double_wavelet_analysis(infile1, infile2, dt=10000., mirror=True, cut1=N
 	except (ValueError):
 		exit('Exited.')
 
-	cwtX, scales, x_pad, xlen, period = run_full_wavelet_analysis(infile1, dt=dt, mirror=mirror, cut1=cut1, cut2=cut2, write_output=write_output, wf=wf, dj=dj, om0=om0, normmean=normmean)
+	cwtX, scales, x_pad, xlen, period = run_full_wavelet_analysis(infile1, dt=dt, mirror=mirror, cut1=cut1, cut2=cut2, write_output=write_output, wf=wf, dj=dj, om0=om0, normmean=normmean, mirrormethod=mirrormethod)
 
 	shutil.copyfile('./xmirror.mean', './xmirror1.mean')
 	shutil.copyfile('./signal.h', './signal1.h')
@@ -272,7 +280,7 @@ def run_double_wavelet_analysis(infile1, infile2, dt=10000., mirror=True, cut1=N
 	shutil.copyfile('./x_icwt.x', './x_icwt1.x')
 	shutil.copyfile('./file.txt', './file1.txt')
 
-	cwtY, scales, y_pad, ylen, period = run_full_wavelet_analysis(infile2, dt=dt, mirror=mirror, cut1=cut1, cut2=cut2, write_output=write_output, wf=wf, dj=dj, om0=om0, normmean=normmean)
+	cwtY, scales, y_pad, ylen, period = run_full_wavelet_analysis(infile2, dt=dt, mirror=mirror, cut1=cut1, cut2=cut2, write_output=write_output, wf=wf, dj=dj, om0=om0, normmean=normmean, mirrormethod=mirrormethod)
 
 	shutil.copyfile('./xmirror.mean', './xmirror2.mean')
 	shutil.copyfile('./signal.h', './signal2.h')
