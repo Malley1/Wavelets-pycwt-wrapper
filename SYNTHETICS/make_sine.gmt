@@ -4,6 +4,8 @@
 # gareth roberts, 21 Nov 2022, gareth.roberts@imperial.ac.uk
 # tidied and adapted by Conor O'Malley 23 Nov 2022 for Linux, to upload to github (https://github.com/Malley1/Wavelets-pycwt-wrapper)
 
+cp ../quick_wavelet.py ./
+
 gmt gmtset PS_MEDIA = a2
 
 colour="white"
