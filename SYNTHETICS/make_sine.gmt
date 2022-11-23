@@ -5,6 +5,7 @@
 # tidied and adapted by Conor O'Malley 23 Nov 2022 for Linux, to upload to github (https://github.com/Malley1/Wavelets-pycwt-wrapper)
 
 cp ../quick_wavelet.py ./
+cp ../processing_wav.py ./
 
 gmt gmtset PS_MEDIA = a2
 
