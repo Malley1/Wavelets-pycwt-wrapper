@@ -1,0 +1,79 @@
+#!/bin/bash
+
+# shell script to plot results of wavelet transformation of combined sine wave series
+# gareth roberts, Nov 2022, gareth.roberts@imperial.ac.uk
+# tidied and adapted by Conor O'Malley for Linux, to upload to github (https://github.com/Malley1/Wavelets-pycwt-wrapper)
+
+psfile="power_pressure.ps"
+
+dx=1.29 # dx 
+
+gmt gmtset FONT_LABEL = 10p,Helvetica,black
+gmt gmtset FONT_ANNOT_PRIMARY = 8p,Helvetica,black
+gmt gmtset FONT_ANNOT_SECONDARY = 10p,Helvetica,black
+gmt gmtset MAP_FRAME_TYPE = plain
+gmt gmtset PS_MEDIA = a2
+
+gmt makecpt -T1e-2/1e5/1 -Cno_green -Qo -Z -D > power.cpt
+
+rm -f temp*
+
+indir="."
+
+# note range on x axis is set by dx * N, where N is the number of measurements of amplitude (i.e. > wc -l signal.h)
+rgn="-R0/64500/-15/15"
+scl='-JX4.1i/2i'
+
+## plot profile...
+gmt psbasemap $rgn $scl -Ba10000:"Time, s":/a10f2:"Pressure, kPa":Wen -Y8i -K -P > $psfile
+awk -v var=$dx '{print ((NR-1)*var), $1}' < $indir/signal.h | gmt psxy $rgn $scl -Ba0 -W0.01i -K -O >> $psfile
+awk -v var=$dx '{print (NR-1)*var, $1}' < $indir/x_icwt.x | gmt psxy $rgn $scl -Ba0 -W0.01i,red -K -O >> $psfile
+echo "a" | gmt pstext $rgn $scl -Ba0 -F+f18p,white,+cTL -D0.05i/-0.05i -O -N -K >> $psfile
+
+## plot wavelet power spectrum 
+rgn=-R0/64500/2.58/64500
+scl='-JX4.1i/2il'
+
+gmt psbasemap $rgn $scl -Ba10000:"Time, s":/1f3p:"Period, s":WeS -Y-2.25i -K -O >> $psfile
+awk '{printf "%4.8f %4.20f %4.8f \n", $2, $4, $3}' $indir/file.txt | gmt surface -I10/10 $rgn -Gsurf.grd
+gmt grdimage surf.grd $rgn $scl -Ba0 -Cpower.cpt -K -O >> $psfile
+
+echo "b" | gmt pstext $rgn $scl -Ba0 -F+f18p,+cTL -D0.05i/-0.05i -K -O -N >> $psfile
+
+gmt psscale -D1i/4.6i/2i/0.1ih -A -Cpower.cpt -B1p:"Power, kPa@+2@+": -Q -O -E -K >> $psfile
+
+
+## plot cumulative power per scale (and frequency). note range on x axis is set by 1/(2*dx) and 1/(N*dx), i.e. twice the shortest frequency and the longest frequency 
+rgn=-R0.00001550387/0.38759689922/1e-8/1e2
+scl='-JX4.1il/2il'
+
+gmt psbasemap $rgn $scl -Ba1f3p:"Frequency, /s":/a1p:"Distance Av. Power, kPa@+2@+":WS -Y-2.7i -K -O >> $psfile
+
+# plot power spectrum from fourier transfrom...
+awk '{printf "%.40f %.40f \n", $1, $2}' < fft.pow | gmt psxy $rgn $scl -Ba0 -W0.01i,grey -O -K >> $psfile
+
+# plot rectified power spectrum from wavelet transform...
+awk '{ printf "%4.20f %4.20f\n", $3, $5}' < $indir/sumpower.fp | gmt psxy $rgn $scl -Ba0 -O -W0.02i -K >> $psfile
+
+# plot exact power of time series generated using make_sine.gmt
+awk '{print $1, $2*$2}' < $indir/freqs.txt | gmt psxy $rgn $scl -Ba0 -O -Sc0.1i -W0.01i,red -K >> $psfile
+awk '{print $1, $2*$2}' < $indir/freqs.txt | gmt psxy $rgn $scl -Ba0 -O -S+0.1i -W0.01i,red -K >> $psfile
+
+# plot period labels
+gmt pstext $rgn $scl -Ba1f:"Frequency, /Myr":/a1p:"":n -F+f9p -O -N -K <<END>> $psfile
+1e-4 5e2 10@+4@+ s
+1e-3 5e2 10@+3@+ s
+1e-2 5e2 10@+2@+ s
+1e-1 5e2 10 s
+#1e0 5e2 1 s
+END
+
+echo "c" | gmt pstext $rgn $scl -Ba0 -F+f18p,+cTR -D-0.04i/-0.04i -K -O -N >> $psfile
+
+### finish up ###
+echo "finishing up..."
+gmt psbasemap $rgn $scl -Ba0 -O >> $psfile
+jpgfile=$(echo $psfile | sed s/"\.ps"/".jpg"/)
+convert -density 300 -quality 100 -trim $psfile $jpgfile
+eog $jpgfile
+

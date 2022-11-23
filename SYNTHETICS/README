@@ -1,0 +1,54 @@
+
+###########################################################
+README for performing wavelet transforms of synthetic data.
+###########################################################
+
+CO'M collated the 4 steps below into make_sine.gmt so all you should need to do to reproduce the (by default white noise) benchmark figure is run:
+> ./make_sine.gmt
+
+########################################################
+
+
+[1] to generate a synthetic dataset to test the wavelet transform code run
+
+> make_sine.gmt
+
+
+[2] the wavelet transformation code can be run using 
+
+> python wrapper.py synth_sine
+
+
+[3] results can be visualised by running
+
+> plot_pressure_basic.gmt 
+
+Note that if the code has run correctly you should expect to see the distance averaged 
+wavelet power spectrum with peaks that match the amplitude of the fourier transformed 
+series (e.g. grey curves in panels labelled c in the examples shown in 
+./output/*/power_pressure.jpg), and importantly, they should match the amplitudes (at the correct
+frequencies) used to generate the synthetic time series (red cross hairs in panels c), 
+i.e. you should be looking at the rectified wavelet power spectrum sensu (liu et al. 2007).
+
+
+[4] finally a script to move output to a separate directory can be run using
+
+> move_to_output.sh 
+
+
+Please see the individual scripts for additional comments.
+
+
+########################################################
+
+
+
+
+Conor O'Malley & Gareth Roberts
+gareth.roberts@imperial.ac.uk  
+November 2022
+
+See https://github.com/Malley1/Wavelets-pycwt-wrapper
+
+
+
