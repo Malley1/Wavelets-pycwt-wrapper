@@ -1,0 +1,100 @@
+#!/bin/bash
+
+# shell script to generate synthetic time series with sine basis function.
+# gareth roberts, 21 Nov 2022, gareth.roberts@imperial.ac.uk
+# tidied and adapted by Conor O'Malley 23 Nov 2022 for Linux, to upload to github (https://github.com/Malley1/Wavelets-pycwt-wrapper)
+
+gmt gmtset PS_MEDIA = a2
+
+colour="white"
+#colour="blue"
+#colour="red"
+
+# set timestep
+dx=1.29
+
+freq0=0.00001
+freq1=0.0001
+freq2=0.001
+freq3=0.01
+freq4=0.1
+
+# generate synthetic time series 
+if [ $colour == "white" ] ; then
+	amp4=3
+	amp3=3
+	amp2=3
+	amp1=3
+	amp0=0
+elif [ $colour == "blue" ] ; then
+	amp4=3
+	amp3=0.3
+	amp2=0.03
+	amp1=0.003
+	amp0=0
+elif [ $colour == "red" ] ; then
+	amp4=0.003
+	amp3=0.03
+	amp2=0.3
+	amp1=3
+	amp0=0
+fi
+echo "plotting $colour noise signal composed of sin waves..."
+
+echo -n "" > freqs.txt
+echo $freq0 $amp0 > freqs.txt
+echo $freq1 $amp1 >> freqs.txt
+echo $freq2 $amp2 >> freqs.txt
+echo $freq3 $amp3 >> freqs.txt
+echo $freq4 $amp4 >> freqs.txt
+
+seq 1 1 50000 > times.txt
+
+awk -v dx=$dx -v amp0=$amp0 -v amp1=$amp1 -v amp2=$amp2 -v amp3=$amp3 -v amp4=$amp4 -v freq0=$freq0 -v freq1=$freq1 -v freq2=$freq2 -v freq3=$freq3 -v freq4=$freq4 '{print NR * dx, amp4*sin(freq4*(NR*dx)*(6.2831853072)) + amp3*sin(freq3*(NR*dx)*(6.2831853072)) + amp2*sin(freq2*(NR*dx)*(6.2831853072)) + amp1*sin(freq1*(NR*dx)*(6.2831853072)) + amp0*sin(freq0*(NR*dx)*(6.2831853072)) }' < times.txt | awk '{print $2}' > synth_sine
+
+
+# plotting...
+psfile="sines.ps"
+rgn="-R0/50000/-15/15"
+scl='-JX12.1i/2i'
+
+# plot synthetic time series...
+
+awk -v dx=$dx -v amp0=$amp0 -v amp1=$amp1 -v amp2=$amp2 -v amp3=$amp3 -v amp4=$amp4 -v freq0=$freq0 -v freq1=$freq1 -v freq2=$freq2 -v freq3=$freq3 -v freq4=$freq4 '{print NR * dx, amp4*sin(freq4*(NR*dx)*(6.2831853072)) + amp3*sin(freq3*(NR*dx)*(6.2831853072)) + amp2*sin(freq2*(NR*dx)*(6.2831853072)) + amp1*sin(freq1*(NR*dx)*(6.2831853072)) + amp0*sin(freq0*(NR*dx)*(6.2831853072)) }' < times.txt | gmt psxy $rgn $scl -Ba10000:"Time, s":/a5:"Amplitude":Wesn -W0.01i,blue -P -K -Y15i > $psfile
+echo "${colour} noise signal" | gmt pstext $rgn $scl -Ba0 -F+f12p,+cTR -D-0.1i/-0.1i -K -O >> $psfile
+
+# plot composite parts of the time series... 
+
+awk -v dx=$dx -v amp4=$amp4 -v freq4=$freq4 '{print NR * dx, amp4*sin(freq4*(NR*dx)*(6.2831853072))}' < times.txt | gmt psxy $rgn $scl -Ba10000:"Time, s":/a5:"Amplitude":Wesn -W0.01i,blue -K -O -Y-2.2i >> $psfile
+echo "Amplitude:" $amp4 | gmt pstext $rgn $scl -Ba0 -F+f12p,+cTR -D-0.1i/-0.1i -K -O >> $psfile
+echo "Frequency:" $freq4 | gmt pstext $rgn $scl -Ba0 -F+f12p,+cTR -D-0.1i/-0.3i -K -O >> $psfile
+
+awk -v dx=$dx -v amp3=$amp3 -v freq3=$freq3 '{print NR * dx, amp3*sin(freq3*(NR*dx)*(6.2831853072))}' < times.txt | gmt psxy $rgn $scl -Ba10000:"Time, s":/a5:"Amplitude":Wesn -W0.01i,blue -K -O -Y-2.2i >> $psfile
+echo "Amplitude:" $amp3 | gmt pstext $rgn $scl -Ba0 -F+f12p,+cTR -D-0.1i/-0.1i -K -O >> $psfile
+echo "Frequency:" $freq3 | gmt pstext $rgn $scl -Ba0 -F+f12p,+cTR -D-0.1i/-0.3i -K -O >> $psfile
+
+awk -v dx=$dx -v amp2=$amp2 -v freq2=$freq2 '{print NR * dx, amp2*sin(freq2*(NR*dx)*(6.2831853072))}' < times.txt | gmt psxy $rgn $scl -Ba10000:"Time, s":/a5:"Amplitude":Wesn -W0.01i,blue -K -O -Y-2.2i >> $psfile
+echo "Amplitude:" $amp2 | gmt pstext $rgn $scl -Ba0 -F+f12p,+cTR -D-0.1i/-0.1i -K -O >> $psfile
+echo "Frequency:" $freq2 | gmt pstext $rgn $scl -Ba0 -F+f12p,+cTR -D-0.1i/-0.3i -K -O >> $psfile
+
+awk -v dx=$dx -v amp0=$amp0 -v amp1=$amp1 -v freq1=$freq1 '{print NR * dx, amp1*sin(freq1*(NR*dx)*(6.2831853072))}' < times.txt | gmt psxy $rgn $scl -Ba10000:"Time, s":/a5:"Amplitude":Wesn -W0.01i,blue -O -K -Y-2.2i >> $psfile
+echo "Amplitude:" $amp1 | gmt pstext $rgn $scl -Ba0 -F+f12p,+cTR -D-0.1i/-0.1i -K -O >> $psfile
+echo "Frequency:" $freq1 | gmt pstext $rgn $scl -Ba0 -F+f12p,+cTR -D-0.1i/-0.3i -O -K >> $psfile
+
+awk -v dx=$dx -v amp0=$amp0 -v freq0=$freq0 '{print NR * dx, amp0*sin(freq0*(NR*dx)*(6.2831853072))}' < times.txt | gmt psxy $rgn $scl -Ba10000:"Time, s":/a5:"Amplitude":WeSn -W0.01i,blue -O -K -Y-2.2i >> $psfile
+echo "Amplitude:" $amp0 | gmt pstext $rgn $scl -Ba0 -F+f12p,+cTR -D-0.1i/-0.1i -K -O >> $psfile
+echo "Frequency:" $freq0 | gmt pstext $rgn $scl -Ba0 -F+f12p,+cTR -D-0.1i/-0.3i -K -O >> $psfile
+
+### finish up ###
+echo "finishing up..."
+gmt psbasemap $rgn $scl -Ba0 -O >> $psfile
+jpgfile=$(echo $psfile | sed s/"\.ps"/".jpg"/)
+convert -density 300 -quality 100 -trim $psfile $jpgfile
+#eog $jpgfile
+
+python3.8 wrapper.py synth_sine
+
+./plot_pressure_basic.gmt
+
+./move_to_output.sh $colour
+
