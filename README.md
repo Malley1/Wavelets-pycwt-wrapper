@@ -6,9 +6,11 @@ Go-to repository for wavelet analysis code (basically a wrapper for [`pycwt`](ht
 Requires `pycwt` and `Python 3.8` or higher.
 
 You can import `quick_wavelet` and then run either `run_full_wavelet_analysis` or `run_double_wavelet_analysis` (see `wrapper.py`).
-Run `./plot_quick_double_results.sh` in Bash shell to recreate example below.
+Run `./plot_quick_double_results.sh` in Bash shell to recreate example below. To successfully reproduce the plots you will need Generic Mapping Tools v6 or higher, and Imagemagick (for conversion from `.ps` to `.jpg`).
 
 Scripts adapted from this repository were used to carry out analysis in [O'Malley et al. (2022; sub jud. GEB)](https://www.biorxiv.org/content/10.1101/2022.01.21.477239v3).
+
+Run `make_sine.gmt` in the `SYNTHETICS` directory to benchmark code: as-is, it should reproduce the plot in the relevant output directory from scratch, for the white noise signal. So, if you don't want to overwrite the existing file, to make sure you have successfully benchmarked the code, comment out the `move_output.sh` line in `make_sine.gmt` before running. Change `$colour` in `make_sine.gmt` to re-run for either blue or red noise signals.
 
 CC BY 4.0 license (see `LICENSE.txt`).
 
