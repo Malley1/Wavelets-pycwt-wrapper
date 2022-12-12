@@ -65,9 +65,10 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 			x = np.concatenate((x,x_rev,x_flip,x_rev_flip,x,x_rev,x_flip,x_rev_flip),axis=0)
 
 		xmirrormean = np.mean(x)
-		xmname = outdir + '/xmirror.mean'
-		np.savetxt(xmname, np.array([xmirrormean]))
+
 		if normmean == True:
+			xmname = outdir + '/xmirror.mean'
+			np.savetxt(xmname, np.array([xmirrormean]))
 			x = x - xmirrormean
 	else:
 		if normmean == True:
