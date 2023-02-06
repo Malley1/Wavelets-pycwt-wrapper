@@ -196,7 +196,7 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 	if write_output == True :
 		np.savetxt(icwtname, x_icwt)
 
-	# calculate mean squared error of icwt... not used currently?
+	# calculate mean squared error of icwt... not used currently
 	diff = np.sqrt((x_pad - x_icwt)**2.)
 	diffmean = np.mean(diff)
 
@@ -228,9 +228,11 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 			np.savetxt(op2name, x_icwt_part2.real)
 
 
-		# calculate mean squared error of icwt... not used currently?
-		diff = np.sqrt((x_pad - x_icwt_part.real)**2.)
-		diffmean = np.mean(diff)
+		# calculate mean squared error of both filtered icwts... not used currently
+		diff_cut1 = np.sqrt((x_pad - x_icwt_part1.real)**2.)
+		diffmean_cut1 = np.mean(diff_cut1)
+		diff_cut2 = np.sqrt((x_pad - x_icwt_part2.real)**2.)
+		diffmean_cut2 = np.mean(diff_cut2)
 	else:
 		print('Not calculating filtered ICWTs...')
 
