@@ -14,7 +14,7 @@ from processing_wav import pad, autoscales, recon, fourier_from_scales, icwt_fix
 
 ##### EXAMPLE VARIABLES TO PASS IN #####
 #	# input transect
-#	infile = './amphibia_richness_americas.dat' or './carnivora_richness_americas.dat'
+#	infile = './amphibia_richness_americas.dat' # or './carnivora_richness_americas.dat'
 #	dt = 10000.
 #	mirror = True
 #	cut1 = 100000.
