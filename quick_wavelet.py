@@ -80,7 +80,6 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 	xlen = len(x_pad)
 	if write_output == True :
 		signame = outdir + '/signal.h'
-		outfile = open(signame, 'w')
 		np.savetxt(signame, x_pad)
 
 	fft_signal = np.fft.rfft(x_pad)
@@ -91,7 +90,7 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 	fft_signal = (2. / xlen) * abs(fft_signal[1:int(xlen/2)+1])
 	fft_power  = abs(fft_signal[0:int(xlen/2)+1]) ** 2.
 
-	fftave = np.convolve(fft_power, np.ones(5)/5)
+	fftave = np.convolve(fft_power, np.ones(5)/5, mode='valid')
 
 	### saving np fft results separate to those done internally by pycwt (by pyfftw.interfaces.scipy_fftpack - see helpers.py from pycwt)
 	fft_freq_np = fft_freq
@@ -130,7 +129,7 @@ def run_full_wavelet_analysis(infile, dt=10000., mirror=True, cut1=None, cut2=No
 	coi = cwtX[3]
 	fft_power_pycwt = cwtX[4] ** 2.
 	fft_freq_pycwt = cwtX[5]
-	fftave_pycwt = np.convolve(fft_power_pycwt, np.ones(5)/5)
+	fftave_pycwt = np.convolve(fft_power_pycwt, np.ones(5)/5, mode='valid')
 	power = (np.abs(X))**2.
 	sumpow = np.sum(power, axis=1)
 
