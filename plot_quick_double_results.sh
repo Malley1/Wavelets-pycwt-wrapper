@@ -1,7 +1,5 @@
 #!/bin/bash
 
-### first do run_double_wavelet_analysis from quick_wavelet.py
-
 gmt gmtset PS_MEDIA = a1
 
 outdir="."
